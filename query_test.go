@@ -15,7 +15,10 @@ import (
 func TestBasicQuery(t *testing.T) {
 	cluster, err := cbcolumnar.NewCluster(TestOpts.OriginalConnStr, cbcolumnar.NewCredential(TestOpts.Username, TestOpts.Password), DefaultOptions())
 	require.NoError(t, err)
-	defer cluster.Close()
+	defer func(cluster *cbcolumnar.Cluster) {
+		err := cluster.Close()
+		assert.NoError(t, err)
+	}(cluster)
 
 	ExecuteQueryAgainst(t, []Queryable{cluster, cluster.Database(TestOpts.Database).Scope(TestOpts.Scope)}, func(tt *testing.T, queryable Queryable) {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -47,7 +50,10 @@ func TestDispatchTimeout(t *testing.T) {
 		DefaultOptions().SetTimeoutOptions(cbcolumnar.NewTimeoutOptions().SetDispatchTimeout(2*time.Second)),
 	)
 	require.NoError(t, err)
-	defer cluster.Close()
+	defer func(cluster *cbcolumnar.Cluster) {
+		err := cluster.Close()
+		assert.NoError(t, err)
+	}(cluster)
 
 	// We're purposely using an invalid hostname so we need to suppress warnings.
 	globalTestLogger.SuppressWarnings(true)
@@ -108,7 +114,10 @@ func TestOperationTimeout(t *testing.T) {
 		DefaultOptions(),
 	)
 	require.NoError(t, err)
-	defer cluster.Close()
+	defer func(cluster *cbcolumnar.Cluster) {
+		err := cluster.Close()
+		assert.NoError(t, err)
+	}(cluster)
 
 	t.Run("Context Deadline", func(tt *testing.T) {
 		ExecuteQueryAgainst(tt, []Queryable{cluster, cluster.Database(TestOpts.Database).Scope(TestOpts.Scope)}, func(ttt *testing.T, queryable Queryable) {
@@ -168,7 +177,10 @@ func TestQueryError(t *testing.T) {
 		DefaultOptions(),
 	)
 	require.NoError(t, err)
-	defer cluster.Close()
+	defer func(cluster *cbcolumnar.Cluster) {
+		err := cluster.Close()
+		assert.NoError(t, err)
+	}(cluster)
 
 	ExecuteQueryAgainst(t, []Queryable{cluster, cluster.Database(TestOpts.Database).Scope(TestOpts.Scope)}, func(tt *testing.T, queryable Queryable) {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -200,7 +212,10 @@ func TestUnmarshaler(t *testing.T) {
 		DefaultOptions().SetUnmarshaler(unmarshaler),
 	)
 	require.NoError(t, err)
-	defer cluster.Close()
+	defer func(cluster *cbcolumnar.Cluster) {
+		err := cluster.Close()
+		assert.NoError(t, err)
+	}(cluster)
 
 	ExecuteQueryAgainst(t, []Queryable{cluster, cluster.Database(TestOpts.Database).Scope(TestOpts.Scope)}, func(tt *testing.T, queryable Queryable) {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -222,7 +237,7 @@ type ErrorUnmarshaler struct {
 	Err error
 }
 
-func (e *ErrorUnmarshaler) Unmarshal(data []byte, target interface{}) error {
+func (e *ErrorUnmarshaler) Unmarshal(_ []byte, _ interface{}) error {
 	return e.Err
 }
 
