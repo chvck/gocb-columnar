@@ -249,7 +249,7 @@ func translateGocbcoreError(err error) error {
 			baseErr.errorText = "operation not sent to server, as context deadline would be exceeded"
 		}
 	default:
-		baseErr.Cause = errors.New(err.Error())
+		baseErr.Cause = errors.New(err.Error()) // nolint: err113
 	}
 
 	return baseErr
